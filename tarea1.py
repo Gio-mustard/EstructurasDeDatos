@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import os
 
 class Circle(ABC):
     @abstractmethod
@@ -10,9 +11,9 @@ class Circle(ABC):
 
 class Stack:
     def __init__(self)->None:
-        self.__length = 5
+        self.length = 5
         self.__last_index_added:int = -1
-        self.__obj:list = [None for i in range(0,self.__length)]
+        self.__obj:list = [None for i in range(0,self.length)]
 
     def pop(self)->int|None:
         if (self.__last_index_added == -1):
@@ -25,7 +26,7 @@ class Stack:
         return item
 
     def push(self,value:int)->None:
-        if (self.__last_index_added + 1 >= self.__length):
+        if (self.__last_index_added + 1 >= self.length):
             print('*'*5,'pila stack', '*'*5)
             return
         self.__last_index_added += 1
@@ -44,53 +45,92 @@ class Stack:
 class Queue:
     iteration_counts:int = 0
     def __init__(self)->None:
-        self.__length = 5
-        self.__first_out:int = 0
-        self.__last_index_added:int = -1
-        self.__obj:list = [None for i in range(0,self.__length)]
+        # Cola no circular, basada en arreglo fijo, con reordenamiento bajo demanda
+        self.length = 5
+        self.first_out:int = 0
+        self.last_index_added:int = -1
+        self.obj:list = [None for i in range(0,self.length)]
+        self.count:int = 0
 
     def dequeue(self)->int|None:
-        if (self.__first_out > self.__last_index_added):
+        if self.count == 0:
             # Cola vacia
             return None
-        item = self.__obj[self.__first_out]
-        self.__obj[self.__first_out] = None
-        self.__first_out+=1
+        item = self.obj[self.first_out]
+        self.obj[self.first_out] = None
+        self.first_out+=1
+        self.count -= 1
         
 
         return item
 
     def queue(self,value:int)->None:
         #soi puto i me gusta la verga
-        if (self.__first_out == 0 and self.__last_index_added == self.__length-1):
+        
+        if self.count == self.length:
             print('cola llena')
             return
             
-        if (self.__last_index_added + 1 >= self.__length):
-            self.__reordenate()
+        if (self.last_index_added + 1 >= self.length):
+            self.reordenate()
         
         
-        self.__last_index_added += 1
-        self.__obj[self.__last_index_added] = value
+        self.last_index_added += 1
+        self.obj[self.last_index_added] = value
+        self.count += 1
         
 
 
-    def __reordenate(self)->None:
-        temp:list = [None for i in range(0,self.__length)]
-        for i in range(self.__first_out,self.__last_index_added+1):
-            temp[i-self.__first_out] = self.__obj[i]
+    def reordenate(self)->None:
+        temp:list = [None for i in range(0,self.length)]
+        for i in range(self.first_out,self.last_index_added+1):
+            temp[i-self.first_out] = self.obj[i]
             Queue.iteration_counts += 1
-        self.__obj = temp
-        self.__last_index_added -= self.__first_out
-        self.__first_out = 0
+        self.obj = temp
+        self.last_index_added -= self.first_out
+        self.first_out = 0
 
     def __str__(self)->str:
-        return str(self.__obj)
+        return str(self.obj)
+    
+class CircularQueue:
+    def __init__(self) -> None:
+        self.length: int = 5
+        self.first_out: int = 0
+        self.last_index_added: int = 0
+        self.count: int = 0
+        self.obj: list[int | None] = [None for _ in range(self.length)]
+
+    def dequeue(self) -> int | None:
+        if self.count == 0:
+            return None
+
+        item = self.obj[self.first_out]
+        self.obj[self.first_out] = None
+
+        self.first_out = (self.first_out + 1) % self.length
+        self.count -= 1
+
+        return item
+
+    def queue(self, value: int) -> None:
+        if self.count == self.length:
+            print("cola llena")
+            return
+
+        self.obj[self.last_index_added] = value
+        self.last_index_added = (self.last_index_added + 1) % self.length
+        self.count += 1
+
+    def __str__(self) -> str:
+        return str(self.obj)
 
 
-def uso_caso_4():
+
+def uso_caso_4(ClassQueueue):
     """Cola con 5 elementos que salen y entran otros 5"""
-    cola = Queue()
+    cola = ClassQueueue()
+    
     print("\n--- Caso de uso 4: Entrada y salida secuencial ---")
     
     print("Agregando primeros 5 elementos...")
@@ -108,9 +148,9 @@ def uso_caso_4():
     
     print(f"Cola final: {cola}")
 
-def uso_caso_5():
+def uso_caso_5(ClassQueueue):
     """Cola con entradas y salidas alternadas múltiples veces"""
-    cola = Queue()
+    cola = ClassQueueue()
     print("\n--- Caso de uso 5: Entradas y salidas alternadas ---")
     
     for ciclo in range(1, 4):
@@ -120,9 +160,9 @@ def uso_caso_5():
         for _ in range(3):
             print(f"  Sacado: {cola.dequeue()}")
 
-def uso_caso_6():
+def uso_caso_6(ClassQueueue):
     """Simulación de un restaurant: clientes llegan y son atendidos. puedes ignorar este caso de uso no voy a andar explicando mi punto con el solo esta por los jajas"""
-    cola = Queue()
+    cola = ClassQueueue()
     print("\n--- Caso de uso 6: Simulación de restaurant ---")
     
     clientes_llegada = [1, 2, 3, 4, 5]
@@ -144,12 +184,32 @@ def uso_caso_6():
         print(f"  → Cliente {cliente} es asignado a mesa {mesa_actual}")
         mesa_actual += 1
     
-
+    def limpiar_consola():
+        os.system('clear')
 if __name__ == "__main__":
-    if False:
-        uso_caso_4()
-        uso_caso_5()
-        uso_caso_6()
+    if True:
+        uso_caso_4(CircularQueue)
+        # uso_caso_5(CircularQueue)
+        # uso_caso_6(CircularQueue)
+        print('*'*50)
+        uwu = CircularQueue()
+        numbers = ''
+        for i in range(0, 100):
+            
+            uwu.queue(i)
+            if i % 5 == 0:
+                for j in range(0,5):
+                    number = uwu.dequeue()        
+                    numbers += f"Dequeue: {number}\n"
+            
+        with open('numbers.txt','w') as f:
+            f.write("Iniciando simulación de cola circular\n")
+            f.write(numbers)
+        
+
+
+
+
         
 
         print('*'*50)
