@@ -120,7 +120,7 @@ const valet = {
     },
     sacarCoche(coche:Coche){
         if (!this.estacionamiento.exists(coche)){
-            console.log("El coche no esta en el estacionamiento.")
+            console.log("[error] El coche no esta en el estacionamiento.")
             return;
         }
         const seSaco = this.estacionamiento.pull(coche);
